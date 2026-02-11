@@ -86,6 +86,7 @@ function App() {
 
         <input
           placeholder="Email"
+          
           value={form.email}
           onChange={(e) =>
             setForm({ ...form, email: e.target.value })
