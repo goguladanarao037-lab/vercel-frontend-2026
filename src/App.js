@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-import { FaEdit, FaTrash } from "react-icons/fa"; // icons for edit/delete
+import { FaEdit, FaTrash } from "react-icons/fa";
 import "./App.css";
+
+// ------------------- DEPLOYED BACKEND URL -------------------
+const API_URL = "https://backend-nine-sigma-53.vercel.app";
 
 // ------------------- FORM SCHEMA -------------------
 const formSchema = [
@@ -18,10 +21,8 @@ const formSchema = [
 const validateUserForm = (form) => {
   const errors = {};
   formSchema.forEach((f) => {
-    if (f.required) {
-      if (!form[f.name] || form[f.name].trim() === "") {
-        errors[f.name] = "This field is required";
-      }
+    if (f.required && (!form[f.name] || form[f.name].trim() === "")) {
+      errors[f.name] = "This field is required";
     }
   });
   return errors;
@@ -37,23 +38,21 @@ const formatDate = (isoString) => {
   return `${day}/${month}/${year}`;
 };
 
-// ------------------- GITHUB LOGIN FUNCTION -------------------
+// ------------------- GITHUB LOGIN -------------------
 const clientId = "Ov23liVUqCm7JakOgwlR";
-const redirectUri = "https://vercel-backend-2026.vercel.app/api/auth/callback"; // deployed backend
+const redirectUri = `${API_URL}/api/auth/callback`;
 
 function loginWithGitHub() {
   window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user:email`;
 }
 
-// ------------------- USER FORM COMPONENT -------------------
+// ------------------- USER FORM -------------------
 function UserForm() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const initialForm = {};
-  formSchema.forEach((f) => {
-    initialForm[f.name] = "";
-  });
+  formSchema.forEach((f) => (initialForm[f.name] = ""));
 
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
@@ -62,10 +61,10 @@ function UserForm() {
   useEffect(() => {
     if (id) {
       axios
-        .get(`https://vercel-backend-2026.vercel.app/users/${id}`)
+        .get(`${API_URL}/users/${id}`)
         .then((res) => {
           const user = res.data;
-          if (user.dob) user.dob = user.dob.split("T")[0]; // keep only date
+          if (user.dob) user.dob = user.dob.split("T")[0];
           setForm(user);
         })
         .catch((err) => console.error(err));
@@ -82,9 +81,9 @@ function UserForm() {
 
     try {
       if (id) {
-        await axios.put(`https://vercel-backend-2026.vercel.app/users/${id}`, form);
+        await axios.put(`${API_URL}/users/${id}`, form);
       } else {
-        await axios.post("https://vercel-backend-2026.vercel.app/users", form);
+        await axios.post(`${API_URL}/users`, form);
       }
       setForm(initialForm);
       setErrors({});
@@ -101,7 +100,6 @@ function UserForm() {
 
   return (
     <div className="form-container">
-      {/* GitHub Login Button */}
       <button onClick={loginWithGitHub} className="form-button" style={{ marginBottom: "20px" }}>
         Login with GitHub
       </button>
@@ -137,7 +135,7 @@ function UserForm() {
   );
 }
 
-// ------------------- USER LIST COMPONENT -------------------
+// ------------------- USER LIST -------------------
 function UserList() {
   const [users, setUsers] = useState([]);
   const navigate = useNavigate();
@@ -148,7 +146,7 @@ function UserList() {
 
   const fetchUsers = async () => {
     try {
-      const { data } = await axios.get("https://vercel-backend-2026.vercel.app/users");
+      const { data } = await axios.get(`${API_URL}/users`);
       setUsers(data);
     } catch (err) {
       console.error(err);
@@ -157,16 +155,14 @@ function UserList() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`https://vercel-backend-2026.vercel.app/users/${id}`);
+      await axios.delete(`${API_URL}/users/${id}`);
       fetchUsers();
     } catch (err) {
       console.error(err);
     }
   };
 
-  const handleEdit = (id) => {
-    navigate(`/edit/${id}`);
-  };
+  const handleEdit = (id) => navigate(`/edit/${id}`);
 
   return (
     <div className="form-container">
